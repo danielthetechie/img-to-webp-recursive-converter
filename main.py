@@ -106,23 +106,40 @@ def get_all_subdirectories_paths_from_directory (root_directory, current_directo
 
 	return sorted (directories_paths)
 
+def get_all_images_paths_from_directories_paths (directories_paths):
+	images_paths = []
 
-def cwebp_convert_all_images_in_folder (quality, convert_recursively):
-	images = []
-	entries_in_folder = os.listdir ('./')
+	for directory_path in directories_paths:
+		entries_in_folder = os.listdir (directory_path)
+		
+		for entry in entries_in_folder:
+			entry_path = os.path.join (directory_path, entry)
+			
+			if (os.path.isfile (entry_path)):
+				images_paths.append (entry_path)
 
-	for entry in entries_in_folder:
-		if (os.path.isfile (entry)):
-			images.append (entry)
+	return images_paths
 
-	if convert_recursively:
-		return images
-	else:
-		return get_all_subdirectories_paths_from_directory ()
 
+# For now it works only on GNU/Linux. If you use Windows, replace the binary file included in ./bin by a Windows-compatible one or, still better, do yourself a favor and get a Linux-based OS.
+def convert_all_images_to_webp (images_paths, quality = 80, convert_recursively = False):
+	#command = "./bin/cwebp -q 80 test/* -o testimg.webp"
+
+	for img_path in images_paths:
+		img_path_head = os.path.split (img_path)[0] + "/"
+		img_original_name = os.path.split (img_path)[1]
+		img_output_name = img_original_name.replace ("png", "webp")
+		command_to_convert_current_image = f"./bin/cwebp -q {quality} {img_path_head}\"{img_original_name}\" -o {img_path_head}\"{img_output_name}\""
+		os.system (command_to_convert_current_image)
+		
+	return True
 
 #print (cwebp_convert_all_images_in_folder (80, True))
-subdirectories = get_all_subdirectories_paths_from_directory ('./playground')
+def main ():
+	root_directory = "./../playground"
+	subdirectories = get_all_subdirectories_paths_from_directory (root_directory)
+	images_paths = get_all_images_paths_from_directories_paths (subdirectories)
+	convert_all_images_to_webp (images_paths)
 
-for sd in subdirectories:
-	print (sd)
+main ()
+#subdirectories = convert_all_images_to_webp ('./test', 80, True)
